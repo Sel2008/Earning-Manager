@@ -1,0 +1,60 @@
+{
+  "generated_at": "2026-09-17 (research seed; refresh via GitHub Action)",
+  "opportunities": [
+    {
+      "name": "Cointiply",
+      "task": "Check current offerwalls/tasks available to your account",
+      "time": "Varies",
+      "pay": "Varies by offer",
+      "hour": "Calculate per task",
+      "status": "UNVERIFIED",
+      "type": "user",
+      "withdraw": "BTC / DOGE / Dash / Litecoin",
+      "reason": "Cointiply says offer availability varies by region and partner; South Africa appears in its Africa country list, but individual offers can differ. Withdrawal minimums and timing are published by Cointiply."
+    },
+    {
+      "name": "Publish0x",
+      "task": "Read or publish eligible crypto content",
+      "time": "Varies",
+      "pay": "Varies",
+      "hour": "Calculate per activity",
+      "status": "UNVERIFIED",
+      "type": "user",
+      "withdraw": "Platform rules apply",
+      "reason": "Publish0x officially describes earning through reading/writing and provides withdrawal guidance, but current availability/reward details must be checked on the account."
+    },
+    {
+      "name": "Binance Learn & Earn",
+      "task": "Check currently available eligible learning campaigns",
+      "time": "Campaign-dependent",
+      "pay": "Campaign-dependent",
+      "hour": "Calculate per campaign",
+      "status": "UNVERIFIED",
+      "type": "user",
+      "withdraw": "Binance reward rules apply",
+      "reason": "Binance states Learn & Earn is targeted/eligibility-based and rewards can be limited; current campaigns must be checked while logged in."
+    },
+    {
+      "name": "FreeCash",
+      "task": "Check currently available offers/surveys",
+      "time": "Varies",
+      "pay": "Varies",
+      "hour": "Calculate per offer",
+      "status": "UNVERIFIED",
+      "type": "user",
+      "withdraw": "Platform-dependent",
+      "reason": "Current account-level eligibility, offer availability and withdrawal rules need live checking before treating an offer as verified."
+    },
+    {
+      "name": "Upfront-payment earning offer",
+      "task": "Requests money before allowing withdrawal",
+      "time": "\u2014",
+      "pay": "Claimed high return",
+      "hour": "Do not calculate",
+      "status": "HIGH RISK",
+      "type": "risk",
+      "withdraw": "Unclear",
+      "reason": "The original agent rules flag upfront payment and unrealistic guaranteed returns as scam warning signs."
+    }
+  ]
+}
