@@ -102,10 +102,18 @@ function render(){
  <p class="note">${o.task}</p>
  <div class="meta"><div>⏱️ Time<b>${o.time}</b></div><div>💰 Reward<b>${o.pay}</b></div><div>📈 Est. R/hour<b>${o.hour}</b></div><div>💳 Withdrawal<b>${o.withdraw}</b></div></div>
  <div class="tags">Why this status: ${o.reason}</div>
- <button class="mini" onclick="toast('Saved for review: ${o.name}')">＋ Save for review</button>
+ <button class="mini" onclick="saveForReview('${o.name.replace(/'/g, "\\'")}')">＋ Save for review</button>
  </div>`).join('');
 }
 function runScout(){loadScout()}
+  function saveForReview(name){
+  let saved=JSON.parse(localStorage.getItem('savedOpportunities')||'[]');
+  if(!saved.includes(name)){
+    saved.push(name);
+    localStorage.setItem('savedOpportunities',JSON.stringify(saved));
+  }
+  toast('Saved for review: '+name);
+  }
 function filterOps(type,el){current=type;document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));el.classList.add('active');render()}
 loadScout();
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>t.style.display='none',2200)}
