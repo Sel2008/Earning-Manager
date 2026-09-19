@@ -154,13 +154,35 @@ function render(){
  <button class="mini" onclick="saveForReview('${o.name.replace(/'/g, "\\'")}')">＋ Save for review</button>
  </div>`).join('');
 }
-function runScout(){loadScout()}
-  function saveForReview(name){
+function runScout(){loadScout()} 
+function saveForReview(name){
   let saved=JSON.parse(localStorage.getItem('savedOpportunities')||'[]');
+
   if(!saved.includes(name)){
     saved.push(name);
     localStorage.setItem('savedOpportunities',JSON.stringify(saved));
   }
+
+  let task={
+    id:Date.now(),
+    title:name,
+    status:'SAVED',
+    createdAt:new Date().toISOString()
+  };
+
+  tasks.push(task);
+
+  let approval={
+    title:'Review '+name,
+    description:'Review this opportunity before starting any account-level or financial action.',
+    status:'PENDING',
+    createdAt:new Date().toISOString()
+  };
+
+  approvals.push(approval);
+
+  saveStep4Data();
+  renderApprovals();
   toast('Saved for review: '+name);
   }
 function filterOps(type,el){current=type;document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));el.classList.add('active');render()}
