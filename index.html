@@ -92,6 +92,25 @@ function saveStep4Data(){
   localStorage.setItem('earningRecords',JSON.stringify(earnings));
   localStorage.setItem('approvalRequests',JSON.stringify(approvals));
   }
+  function renderApprovals(){
+  const box=document.getElementById('approvals');
+  if(!approvals.length){
+    box.innerHTML='<div class="empty">No actions are waiting for approval.</div>';
+    return;
+  }
+
+  box.innerHTML=approvals.map((a,i)=>`
+    <div class="op">
+      <div class="optop">
+        <h3>${a.title}</h3>
+        <span class="status">${a.status||'PENDING'}</span>
+      </div>
+      <p class="note">${a.description||'Approval required before this action can continue.'}</p>
+      <button class="mini" onclick="approveRequest(${i})">Approve</button>
+      <button class="mini" onclick="rejectRequest(${i})">Reject</button>
+    </div>
+  `).join('');
+}
 async function loadScout(){
   const s=document.getElementById('scan');
   s.textContent='🔄 Loading the latest Scout feed…';
