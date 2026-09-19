@@ -111,6 +111,21 @@ function saveStep4Data(){
     </div>
   `).join('');
 }
+  function approveRequest(i){
+  if(!approvals[i]) return;
+  approvals[i].status='APPROVED';
+  saveStep4Data();
+  renderApprovals();
+  toast('Approval granted.');
+}
+
+function rejectRequest(i){
+  if(!approvals[i]) return;
+  approvals[i].status='REJECTED';
+  saveStep4Data();
+  renderApprovals();
+  toast('Request rejected.');
+  }
 async function loadScout(){
   const s=document.getElementById('scan');
   s.textContent='🔄 Loading the latest Scout feed…';
