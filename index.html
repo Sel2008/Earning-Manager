@@ -187,6 +187,7 @@ function saveForReview(name){
   }
 function filterOps(type,el){current=type;document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));el.classList.add('active');render()}
 loadScout();
+renderApprovals();
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>t.style.display='none',2200)}
 </script>
 </div>
