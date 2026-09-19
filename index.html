@@ -76,7 +76,15 @@ nav button{border:0;background:none;font-size:11px;color:#6b7280}nav button:firs
 <script>
 let opportunities=[];
 let current='all';
+let tasks=JSON.parse(localStorage.getItem('earningTasks')||'[]');
+let earnings=JSON.parse(localStorage.getItem('earningRecords')||'[]');
+let approvals=JSON.parse(localStorage.getItem('approvalRequests')||'[]');
 
+function saveStep4Data(){
+  localStorage.setItem('earningTasks',JSON.stringify(tasks));
+  localStorage.setItem('earningRecords',JSON.stringify(earnings));
+  localStorage.setItem('approvalRequests',JSON.stringify(approvals));
+  }
 async function loadScout(){
   const s=document.getElementById('scan');
   s.textContent='🔄 Loading the latest Scout feed…';
