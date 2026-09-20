@@ -113,10 +113,25 @@ function saveStep4Data(){
 }
   function approveRequest(i){
   if(!approvals[i]) return;
+
   approvals[i].status='APPROVED';
+
+  let taskTitle=approvals[i].title.replace(/^Review /,'');
+  let task=tasks.find(t=>t.title===taskTitle && t.status==='SAVED');
+
+  if(task){
+    task.status='READY';
+  }
+
   saveStep4Data();
   renderApprovals();
-  toast('Approval granted.');
+
+  if(task){
+    toast('Approved. Task is ready to start.');
+  }else{
+    toast('Approval granted.');
+  }
+
 }
 
 function rejectRequest(i){
