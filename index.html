@@ -209,8 +209,27 @@ function saveForReview(name){
   toast('Saved for review: '+name);
   }
 function filterOps(type,el){current=type;document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));el.classList.add('active');render()}
+  function renderTasks(){
+  const box=document.getElementById('taskManager');
+
+  if(!tasks.length){
+    box.innerHTML='<div class="empty">No tasks have been saved yet.</div>';
+    return;
+  }
+
+  box.innerHTML=tasks.map(t=>`
+    <div class="op">
+      <div class="optop">
+        <h3>${t.title}</h3>
+        <span class="status">${t.status}</span>
+      </div>
+      <p class="note">Created: ${new Date(t.createdAt).toLocaleString()}</p>
+    </div>
+  `).join('');
+  }
 loadScout();
 renderApprovals();
+renderTasks();
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>t.style.display='none',2200)}
 </script>
 </div>
