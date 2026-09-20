@@ -229,8 +229,42 @@ function filterOps(type,el){current=type;document.querySelectorAll('.filter').fo
   }
 loadScout();
 renderApprovals();
-renderTasks();
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>t.style.display='none',2200)}
+function renderTasks(){
+  const box=document.getElementById('taskManager');
+
+  if(!tasks.length){
+    box.innerHTML='<div class="empty">No tasks have been saved yet.</div>';
+    return;
+  }
+
+  box.innerHTML=tasks.map((t,i)=>`
+    <div class="op">
+      <div class="optop">
+        <h3>${t.title}</h3>
+        <span class="status">${t.status}</span>
+      </div>
+
+      <p class="note">Created: ${new Date(t.createdAt).toLocaleString()}</p>
+
+      ${t.status==='READY'
+        ? `<button class="mini" onclick="startTask(${i})">▶ Start Task</button>`
+        : ''
+      }
+    </div>
+  `).join('');
+}
+
+function startTask(i){
+  if(!tasks[i]) return;
+  if(tasks[i].status!=='READY') return;
+
+  tasks[i].status='IN PROGRESS';
+
+  saveStep4Data();
+  renderTasks();
+
+  toast('Task started.');
+}
 </script>
 </div>
 </body>
