@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
-<title>Earning Manager • Step 2</title>
+<title>Earning Manager • Step 4</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f3f4f6;color:#111827}
 .app{max-width:520px;margin:auto;min-height:100vh;background:#fff}
@@ -27,13 +27,14 @@ nav button{border:0;background:none;font-size:11px;color:#6b7280}nav button:firs
 </head>
 <body>
 <div class="app">
-<header><div class="badge">STEP 2 • OPPORTUNITY SCOUT</div><h1>🤖 Earning Manager</h1><p>Find • verify • compare • track</p></header>
+<header><div class="badge">STEP 4 • EARNING MANAGER</div><h1>🤖 Earning Manager</h1><p>Find • verify • compare • track</p></header>
 <main>
 <section class="card">
 <div class="target"><div><small>MONTHLY TARGET</small><br><strong>R1,500</strong></div><div>🎯</div></div>
 <div class="progress"><div class="bar" id="bar"></div></div>
 <div class="target"><span>First milestone</span><b>R500</b></div>
 </section>
+
 <section class="stats">
 <div class="stat"><small>Earned</small><b>R0.00</b></div><div class="stat"><small>Pending</small><b>R0.00</b></div>
 <div class="stat"><small>Withdrawable</small><b>R0.00</b></div><div class="stat"><small>Today</small><b>R0.00</b></div>
@@ -58,6 +59,7 @@ nav button{border:0;background:none;font-size:11px;color:#6b7280}nav button:firs
 <div class="empty">Tap <b>Run Scout</b> to load the opportunity workspace.</div>
 </div>
 </section>
+
 <section class="card">
 <h2>✅ Approval Center</h2>
 <p class="note">Tasks and actions that need your approval will appear here before anything account-level or financial is attempted.</p>
@@ -65,29 +67,34 @@ nav button{border:0;background:none;font-size:11px;color:#6b7280}nav button:firs
 <div id="approvals">
 <div class="empty">No actions are waiting for approval.</div>
 </div>
-  </section>
-  <section class="card">
+</section>
+
+<section class="card">
 <h2>📋 Task Manager</h2>
 <p class="note">Approved opportunities become tasks here. Tasks show their current status before work begins.</p>
 
 <div id="taskManager">
 <div class="empty">No tasks have been saved yet.</div>
 </div>
-  </section>
+</section>
+
 <section class="card">
 <h2>🛡️ Scout Rules</h2>
 <p class="note">Before recommending an opportunity, the agent checks country eligibility, requirements, payout, minimum withdrawal, payment method, legitimacy signals and whether automation is permitted.</p>
 <p class="note"><b>Never:</b> bypass CAPTCHA, create fake identities/accounts, fake reviews or engagement, evade restrictions, or move money without approval.</p>
 </section>
 </main>
+
 <nav>
 <button onclick="toast('Dashboard coming in the next module update')">🏠<br>Home</button>
-<button onclick="toast('Task Manager is next')">📋<br>Tasks</button>
+<button onclick="openTaskManager()">📋<br>Tasks</button>
 <button onclick="toast('Earnings Tracker is next')">💰<br>Earnings</button>
 <button onclick="toast('POD Engine is coming')">🛍️<br>POD</button>
 <button onclick="toast('Security settings will be added later')">⚙️<br>Settings</button>
 </nav>
+
 <div class="toast" id="toast"></div>
+
 <script>
 let opportunities=[];
 let current='all';
@@ -99,9 +106,11 @@ function saveStep4Data(){
   localStorage.setItem('earningTasks',JSON.stringify(tasks));
   localStorage.setItem('earningRecords',JSON.stringify(earnings));
   localStorage.setItem('approvalRequests',JSON.stringify(approvals));
-  }
-  function renderApprovals(){
+}
+
+function renderApprovals(){
   const box=document.getElementById('approvals');
+
   if(!approvals.length){
     box.innerHTML='<div class="empty">No actions are waiting for approval.</div>';
     return;
@@ -119,7 +128,8 @@ function saveStep4Data(){
     </div>
   `).join('');
 }
-  function approveRequest(i){
+
+function approveRequest(i){
   if(!approvals[i]) return;
 
   approvals[i].status='APPROVED';
@@ -133,13 +143,13 @@ function saveStep4Data(){
 
   saveStep4Data();
   renderApprovals();
+  renderTasks();
 
   if(task){
     toast('Approved. Task is ready to start.');
   }else{
     toast('Approval granted.');
   }
-
 }
 
 function rejectRequest(i){
@@ -148,10 +158,12 @@ function rejectRequest(i){
   saveStep4Data();
   renderApprovals();
   toast('Request rejected.');
-  }
+}
+
 async function loadScout(){
   const s=document.getElementById('scan');
   s.textContent='🔄 Loading the latest Scout feed…';
+
   try{
     const r=await fetch('data/opportunities.json?ts='+Date.now(),{cache:'no-store'});
     if(!r.ok) throw new Error('feed unavailable');
@@ -165,26 +177,41 @@ async function loadScout(){
     render();
   }
 }
+
 function render(){
- const box=document.getElementById('results');
- let list=opportunities.filter(o=>current==='all'||o.type===current|| (current==='verified'&&o.status==='VERIFIED'));
- if(!list.length){box.innerHTML='<div class="empty">No opportunities match this filter, or the Scout feed is not connected yet.</div>';return}
- box.innerHTML=list.map(o=>`<div class="op">
- <div class="optop"><h3>${o.name}</h3><span class="status ${o.status==='VERIFIED'?'verified':o.status==='HIGH RISK'?'risk':'unverified'}">${o.status}</span></div>
- <p class="note">${o.task}</p>
- <div class="meta"><div>⏱️ Time<b>${o.time}</b></div><div>💰 Reward<b>${o.pay}</b></div><div>📈 Est. R/hour<b>${o.hour}</b></div><div>💳 Withdrawal<b>${o.withdraw}</b></div></div>
- <div class="tags">Why this status: ${o.reason}</div>
- <button class="mini" onclick="saveForReview('${o.name.replace(/'/g, "\\'")}')">＋ Save for review</button>
- </div>`).join('');
+  const box=document.getElementById('results');
+  let list=opportunities.filter(o=>current==='all'||o.type===current|| (current==='verified'&&o.status==='VERIFIED'));
+
+  if(!list.length){
+    box.innerHTML='<div class="empty">No opportunities match this filter, or the Scout feed is not connected yet.</div>';
+    return;
+  }
+
+  box.innerHTML=list.map(o=>`<div class="op">
+  <div class="optop"><h3>${o.name}</h3><span class="status ${o.status==='VERIFIED'?'verified':o.status==='HIGH RISK'?'risk':'unverified'}">${o.status}</span></div>
+  <p class="note">${o.task}</p>
+  <div class="meta"><div>⏱️ Time<b>${o.time}</b></div><div>💰 Reward<b>${o.pay}</b></div><div>📈 Est. R/hour<b>${o.hour}</b></div><div>💳 Withdrawal<b>${o.withdraw}</b></div></div>
+  <div class="tags">Why this status: ${o.reason}</div>
+  <button class="mini" onclick="saveForReview('${o.name.replace(/'/g, "\\'")}')">＋ Save for review</button>
+  </div>`).join('');
 }
-function runScout(){loadScout()} 
+
+function runScout(){
+  loadScout();
+}
+
 function saveForReview(name){
   let saved=JSON.parse(localStorage.getItem('savedOpportunities')||'[]');
 
-  if(!saved.includes(name)){
-    saved.push(name);
-    localStorage.setItem('savedOpportunities',JSON.stringify(saved));
+  if(saved.includes(name)){
+    toast('Already saved for review: '+name);
+    renderTasks();
+    renderApprovals();
+    return;
   }
+
+  saved.push(name);
+  localStorage.setItem('savedOpportunities',JSON.stringify(saved));
 
   let task={
     id:Date.now(),
@@ -206,29 +233,21 @@ function saveForReview(name){
 
   saveStep4Data();
   renderApprovals();
+  renderTasks();
   toast('Saved for review: '+name);
-  }
-function filterOps(type,el){current=type;document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));el.classList.add('active');render()}
-  function renderTasks(){
-  const box=document.getElementById('taskManager');
+}
 
-  if(!tasks.length){
-    box.innerHTML='<div class="empty">No tasks have been saved yet.</div>';
-    return;
-  }
+function filterOps(type,el){
+  current=type;
+  document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
 
-  box.innerHTML=tasks.map(t=>`
-    <div class="op">
-      <div class="optop">
-        <h3>${t.title}</h3>
-        <span class="status">${t.status}</span>
-      </div>
-      <p class="note">Created: ${new Date(t.createdAt).toLocaleString()}</p>
-    </div>
-  `).join('');
-  }
 loadScout();
 renderApprovals();
+renderTasks();
+
 function renderTasks(){
   const box=document.getElementById('taskManager');
 
@@ -254,6 +273,12 @@ function renderTasks(){
   `).join('');
 }
 
+function openTaskManager(){
+  const manager=document.getElementById('taskManager');
+  manager.scrollIntoView({behavior:'smooth',block:'center'});
+  toast('Task Manager opened.');
+}
+
 function startTask(i){
   if(!tasks[i]) return;
   if(tasks[i].status!=='READY') return;
@@ -268,4 +293,4 @@ function startTask(i){
 </script>
 </div>
 </body>
-</html>
+  </html>
