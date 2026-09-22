@@ -22,7 +22,25 @@
       "payout_confirmed": false,
       "upfront_cost": 0,
       "research_confidence": "PARTIAL",
-      "priority_class": "HUMAN_REVIEW"
+      "priority_class": "HUMAN_REVIEW",
+      "verification": {
+        "eligibility_status": "UNKNOWN",
+        "compensation_status": "UNKNOWN",
+        "automation_permission_status": "UNKNOWN",
+        "payout_status": "UNKNOWN",
+        "minimum_withdrawal": null,
+        "payment_methods": [],
+        "country_eligibility": "UNKNOWN",
+        "evidence_urls": [
+          "https://support.cointiply.com/en/support/solutions/articles/36000101129-i-can-t-get-offers-in-my-country-"
+        ],
+        "evidence_notes": [
+          "Source evidence has not yet proven that automation is permitted.",
+          "Eligibility, compensation amount, minimum withdrawal and payout mechanism remain to be verified."
+        ],
+        "verified_at": null,
+        "confidence": "PARTIAL"
+      }
     },
     {
       "name": "Publish0x",
@@ -45,7 +63,25 @@
       "payout_confirmed": false,
       "upfront_cost": 0,
       "research_confidence": "LOW",
-      "priority_class": "HUMAN_REVIEW"
+      "priority_class": "HUMAN_REVIEW",
+      "verification": {
+        "eligibility_status": "UNKNOWN",
+        "compensation_status": "UNKNOWN",
+        "automation_permission_status": "UNKNOWN",
+        "payout_status": "UNKNOWN",
+        "minimum_withdrawal": null,
+        "payment_methods": [],
+        "country_eligibility": "UNKNOWN",
+        "evidence_urls": [
+          "https://www.publish0x.com/page/how-it-works"
+        ],
+        "evidence_notes": [
+          "Source evidence has not yet proven that automation is permitted.",
+          "Eligibility, compensation amount, minimum withdrawal and payout mechanism remain to be verified."
+        ],
+        "verified_at": null,
+        "confidence": "LOW"
+      }
     },
     {
       "name": "Binance Learn & Earn",
@@ -68,7 +104,25 @@
       "payout_confirmed": false,
       "upfront_cost": 0,
       "research_confidence": "PARTIAL",
-      "priority_class": "HUMAN_REVIEW"
+      "priority_class": "HUMAN_REVIEW",
+      "verification": {
+        "eligibility_status": "UNKNOWN",
+        "compensation_status": "UNKNOWN",
+        "automation_permission_status": "UNKNOWN",
+        "payout_status": "UNKNOWN",
+        "minimum_withdrawal": null,
+        "payment_methods": [],
+        "country_eligibility": "UNKNOWN",
+        "evidence_urls": [
+          "https://www.binance.com/en/support/faq/detail/3819c21bd5fb493fa5057c727043cb14"
+        ],
+        "evidence_notes": [
+          "Source evidence has not yet proven that automation is permitted.",
+          "Eligibility, compensation amount, minimum withdrawal and payout mechanism remain to be verified."
+        ],
+        "verified_at": null,
+        "confidence": "PARTIAL"
+      }
     },
     {
       "name": "FreeCash",
@@ -89,7 +143,23 @@
       "payout_confirmed": false,
       "upfront_cost": 0,
       "research_confidence": "LOW",
-      "priority_class": "HUMAN_REVIEW"
+      "priority_class": "HUMAN_REVIEW",
+      "verification": {
+        "eligibility_status": "UNKNOWN",
+        "compensation_status": "UNKNOWN",
+        "automation_permission_status": "UNKNOWN",
+        "payout_status": "UNKNOWN",
+        "minimum_withdrawal": null,
+        "payment_methods": [],
+        "country_eligibility": "UNKNOWN",
+        "evidence_urls": [],
+        "evidence_notes": [
+          "Source evidence has not yet proven that automation is permitted.",
+          "Eligibility, compensation amount, minimum withdrawal and payout mechanism remain to be verified."
+        ],
+        "verified_at": null,
+        "confidence": "LOW"
+      }
     },
     {
       "name": "Upfront-payment earning offer",
@@ -109,7 +179,23 @@
       "payout_confirmed": false,
       "upfront_cost": 10,
       "research_confidence": "LOW",
-      "priority_class": "REJECT"
+      "priority_class": "REJECT",
+      "verification": {
+        "eligibility_status": "UNKNOWN",
+        "compensation_status": "UNKNOWN",
+        "automation_permission_status": "PROHIBITED",
+        "payout_status": "UNKNOWN",
+        "minimum_withdrawal": null,
+        "payment_methods": [],
+        "country_eligibility": "UNKNOWN",
+        "evidence_urls": [],
+        "evidence_notes": [
+          "Automation is explicitly disallowed by the current research record.",
+          "Eligibility, compensation amount, minimum withdrawal and payout mechanism remain to be verified."
+        ],
+        "verified_at": null,
+        "confidence": "LOW"
+      }
     }
   ],
   "discovery_mode": "CONTINUOUS",
@@ -183,5 +269,28 @@
     "mode": "CONTINUOUS",
     "feed_role": "Research results are stored as structured opportunity records; the Manager scores them whenever the feed loads.",
     "next_layer": "A scheduled research worker should refresh this feed from permitted public sources and write evidence-backed records without taking external earning actions."
+  },
+  "verification_policy": {
+    "enabled": true,
+    "rule": "A keyword or source-page inspection is evidence collection only. The Manager must not label eligibility, compensation, automation permission or payout as VERIFIED without authoritative supporting evidence.",
+    "statuses": [
+      "VERIFIED",
+      "PARTIAL",
+      "UNKNOWN",
+      "NOT_ELIGIBLE",
+      "PROHIBITED"
+    ],
+    "required_for_auto_priority": [
+      "eligibility_status",
+      "compensation_status",
+      "automation_permission_status",
+      "payout_status"
+    ],
+    "required_evidence": [
+      "authoritative_source_url",
+      "specific_terms_or_payout_evidence",
+      "country_or_account_eligibility_when_applicable"
+    ],
+    "recheck_before_action": true
   }
 }
