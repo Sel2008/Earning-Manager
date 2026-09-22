@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T03:03:38+00:00 UTC",
+  "generated_at": "2026-09-22T04:40:29.109Z",
   "opportunities": [
     {
       "name": "Cointiply",
@@ -66,5 +66,35 @@
       "withdraw": "Unclear",
       "reason": "The original agent rules flag upfront payment and unrealistic guaranteed returns as scam warning signs."
     }
-  ]
+  ],
+  "discovery_mode": "CONTINUOUS",
+  "discovery_scope": [
+    "microtasks",
+    "data labeling and evaluation",
+    "transcription and structured data conversion",
+    "website and app testing",
+    "research and public-data collection",
+    "digital services",
+    "affiliate and referral programs",
+    "open paid APIs and data work",
+    "other legitimate zero-upfront-cost online work"
+  ],
+  "discovery_rules": {
+    "upfront_cost": 0,
+    "automation_required": true,
+    "verify_automation_permission": true,
+    "require_machine_verifiable_completion": true,
+    "require_payout_confirmation": true,
+    "no_fake_identity": true,
+    "no_spam_or_fake_engagement": true,
+    "no_captcha_bypass": true,
+    "no_geo_restriction_bypass": true,
+    "no_unapproved_withdrawals": true
+  },
+  "seed_examples_note": "The named platforms in this file are seed examples only. They are not the full opportunity universe. The Manager should continuously research other legitimate opportunities and prefer those that permit automation and have independently verifiable completion and payout.",
+  "current_research_notes": {
+    "Cointiply": "Current terms explicitly prohibit automating tasks, games or faucet spins; do not build an automation agent for those activities.",
+    "FreeCash": "Current terms prohibit bots, scripts and other automation that simulate human activity and prohibit automated website access; do not build an automation agent for offer completion.",
+    "Binance_Learn_and_Earn": "Current official guidance describes targeted eligibility, identity verification, quiz completion and later reward distribution; any automation must be separately verified as permitted before implementation."
+  }
 }
