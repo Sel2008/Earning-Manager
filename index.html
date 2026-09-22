@@ -37,7 +37,7 @@ h2{font-size:18px;margin:3px 0 10px}
 .status{font-size:10px;font-weight:800;border-radius:999px;padding:5px 7px;background:#e5e7eb;white-space:nowrap}
 .earning-entry{margin-top:10px;padding:11px;background:#f9fafb;border-radius:12px}
 .earning-entry input{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:10px;font-size:14px;margin:7px 0}
-.task-type{font-size:10px;font-weight:800;border-radius:999px;padding:5px 7px;background:#eef2ff;white-space:nowrap}
+.task-type{font-size:10px;font-weight:800;border-radius:999px;padding:5px 7px;background:#eef2ff;white-space:nowrap}.bot-confirm{margin-top:10px;padding:11px;background:#fff7ed;border-radius:12px;border:1px solid #fed7aa}.bot-confirm input{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:10px;font-size:14px;margin:7px 0}
 .verified{background:#dcfce7}
 .unverified{background:#fef3c7}
 .risk{background:#fee2e2}
@@ -414,10 +414,10 @@ function renderTasks(){
         ? `<button class="mini" onclick="completeTask(${i})">✅ ${taskType==='BOT'?'Bot Reports Task Complete':'Mark Task Complete'}</button>`
         : ''}
 
-      ${t.status==='COMPLETE'
+      ${(t.status==='COMPLETE'||t.status==='BOT REPORTED COMPLETE')
         ? `
           <div class="earning-entry">
-            <div class="note"><b>Task complete.</b> ${taskType==='BOT'
+            <div class="note"><b>${t.status==='BOT REPORTED COMPLETE'?'Bot reported completion.':'Task complete.'}</b> ${taskType==='BOT'
               ? 'Enter the payout amount confirmed by the earning platform. The app will not invent or estimate the payout.'
               : 'Enter the actual amount you earned. The app will not invent or estimate this amount.'}</div>
             <input id="earnedAmount-${i}" type="number" min="0" step="0.01" placeholder="Confirmed amount earned (R)">
@@ -466,7 +466,11 @@ function completeTask(i){
   if(!tasks[i]) return;
   if(tasks[i].status!=='IN PROGRESS') return;
 
-  tasks[i].status='COMPLETE';
+  if((tasks[i].taskType||'MANUAL')==='BOT'){
+    tasks[i].status='BOT REPORTED COMPLETE';
+  }else{
+    tasks[i].status='COMPLETE';
+  }
 
   saveStep4Data();
   renderTasks();
@@ -478,7 +482,7 @@ function completeTask(i){
 
 function recordTaskEarning(i){
   if(!tasks[i]) return;
-  if(tasks[i].status!=='COMPLETE') return;
+  if(tasks[i].status!=='COMPLETE' && tasks[i].status!=='BOT REPORTED COMPLETE') return;
 
   const input=document.getElementById('earnedAmount-'+i);
   const amount=Number(input && input.value);
@@ -501,6 +505,7 @@ function recordTaskEarning(i){
   tasks[i].earnedAmount=Number(amount.toFixed(2));
   tasks[i].earningStatus='EARNED';
   tasks[i].status='EARNING RECORDED';
+  tasks[i].earningConfirmedAt=new Date().toISOString();
 
   saveStep4Data();
   renderTasks();
