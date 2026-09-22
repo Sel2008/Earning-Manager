@@ -10,9 +10,10 @@
       "status": "UNVERIFIED",
       "type": "user",
       "withdraw": "BTC / DOGE / Dash / Litecoin",
-      "reason": "Cointiply says offer availability varies by region and partner; South Africa appears in its Africa country list, but individual offers can differ. Withdrawal minimums and timing are published by Cointiply.",
+      "reason": "Platform identified for integration research. Current account-level offers, eligibility, payout amount and withdrawal method must be confirmed before an automated task can record earnings.",
       "source_checked": true,
-      "source_url": "https://support.cointiply.com/en/support/solutions/articles/36000101129-i-can-t-get-offers-in-my-country-"
+      "source_url": "https://support.cointiply.com/en/support/solutions/articles/36000101129-i-can-t-get-offers-in-my-country-",
+      "integration_status": "RESEARCH_REQUIRED"
     },
     {
       "name": "Publish0x",
@@ -23,9 +24,10 @@
       "status": "UNVERIFIED",
       "type": "user",
       "withdraw": "Platform rules apply",
-      "reason": "Publish0x officially describes earning through reading/writing and provides withdrawal guidance, but current availability/reward details must be checked on the account.",
+      "reason": "Platform identified for integration research. Current account-level earning and withdrawal mechanisms must be confirmed before automation.",
       "source_checked": false,
-      "source_url": "https://www.publish0x.com/page/how-it-works"
+      "source_url": "https://www.publish0x.com/page/how-it-works",
+      "integration_status": "RESEARCH_REQUIRED"
     },
     {
       "name": "Binance Learn & Earn",
@@ -36,9 +38,10 @@
       "status": "UNVERIFIED",
       "type": "user",
       "withdraw": "Binance reward rules apply",
-      "reason": "Binance states Learn & Earn is targeted/eligibility-based and rewards can be limited; current campaigns must be checked while logged in.",
+      "reason": "Platform identified for integration research. Campaign eligibility, reward confirmation and withdrawal mechanisms must be confirmed before automation.",
       "source_checked": true,
-      "source_url": "https://www.binance.com/en/support/faq/detail/3819c21bd5fb493fa5057c727043cb14"
+      "source_url": "https://www.binance.com/en/support/faq/detail/3819c21bd5fb493fa5057c727043cb14",
+      "integration_status": "RESEARCH_REQUIRED"
     },
     {
       "name": "FreeCash",
@@ -49,12 +52,13 @@
       "status": "UNVERIFIED",
       "type": "user",
       "withdraw": "Platform-dependent",
-      "reason": "Current account-level eligibility, offer availability and withdrawal rules need live checking before treating an offer as verified."
+      "reason": "Platform identified for integration research. Current offer eligibility, completion callbacks/API options and payout confirmation must be confirmed before automation.",
+      "integration_status": "RESEARCH_REQUIRED"
     },
     {
       "name": "Upfront-payment earning offer",
       "task": "Requests money before allowing withdrawal",
-      "time": "\u2014",
+      "time": "—",
       "pay": "Claimed high return",
       "hour": "Do not calculate",
       "status": "HIGH RISK",
