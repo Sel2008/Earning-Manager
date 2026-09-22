@@ -30,6 +30,7 @@ The GitHub account/repository connection is already available to the current Cha
 7. External account actions, CAPTCHAs, KYC, personalized eligibility, withdrawals and financial actions remain user-controlled unless a future integration explicitly and legitimately supports them.
 8. Keep the separate Future Plan/prompt-driven agent experiment separate from this current GitHub implementation.
 9. Use minimal screenshots; the handoff should provide enough context to continue without re-establishing the project from screenshots.
+10. **UI changes are a separate controlled phase. Do not combine a major UI redesign with simultaneous changes to the task engine, research engine, or automation system.**
 
 ## 3. What Step 3 already provides
 
@@ -130,7 +131,7 @@ This has already been added to the repository.
 Relevant commits include:
 - `14dc40452d04e58fb056b8bc9eddc87f53f572ae` — Add automation-first human-opportunity decision layer
 - `19bc548f0c7afff5cc3dc4f6949ce6074b2ea41c` — Add continuous opportunity decision schema
-- `e480f9b7a178b68a623f34d53263cefeffbdeeaf` — Add continuous earning research worker
+- `e480f9b7a178b68a623f34d53263feceffbdeeaf` — Add continuous earning research worker
 - `df0492dc85d1b3c8b8c37707ae9c1a00bf7698ea` — Schedule continuous earning research
 - `87d53521d80ecd40b18d1fdaf38620db4706919b` — Add evidence inspection to continuous research
 - `18499e0f83ee50bad505e8a7bc075f739a8b2584` — Show continuous research verification status
@@ -203,6 +204,8 @@ A recent repository commit is:
 Commit message:
 **Create MASTER PROJECT HANDOFF V4 backup**
 
+The Handoff V4 file has since been updated with the safe UI-change strategy in this document.
+
 Other recent verification/research commits are listed in Section 6.
 
 A future ChatGPT should check the repository's latest `main` state before assuming any older handoff document is newer than the code.
@@ -229,7 +232,42 @@ Next:
 6. Record the actual test result in the next handoff or project notes.
 7. Only after this test should another Step 4 code change be considered.
 
-## 12. What must NOT be claimed
+## 12. Safe UI-change strategy and risk minimisation
+
+If the UI is difficult to change, the project should **not** risk the working system by mixing UI redesign with core functionality changes.
+
+### Safest approach
+1. Keep the current working UI/code as the baseline.
+2. Create/confirm a GitHub backup or known-good commit before a substantial UI change.
+3. Change **one UI area at a time** rather than rewriting unrelated systems simultaneously.
+4. Test immediately after each meaningful UI change.
+5. If a change breaks something, restore the last known-good version instead of stacking more fixes on top.
+6. Commit every stable version to GitHub so there is a clear rollback point.
+7. When a UI change is large enough that scattered edits become risky, prefer a complete tested `index.html` replacement that preserves the existing functionality, rather than many difficult manual edits.
+
+### When to do UI changes
+The recommended sequence is:
+
+**Current Step 4:** finish testing the existing UI/workflow first.
+
+Then:
+
+**UI improvement phase:** freeze/stabilise the working functionality, make the UI changes as a separate controlled phase, and re-run the existing tests.
+
+Then:
+
+**Automation phase:** only after the manager/UI is stable should deeper automation work be developed and tested.
+
+### Why this minimises risk
+Do not simultaneously redesign the UI, modify the task/earning engine, change the research system and introduce automation. If something breaks, the cause becomes difficult to isolate.
+
+The preferred progression is:
+
+**Known-good system -> backup -> one controlled change -> test -> commit -> next change.**
+
+The current UI is therefore treated as the **baseline**, not something that must be redesigned immediately. Future UI improvements should be deliberate and separately tested.
+
+## 13. What must NOT be claimed
 
 - A task record is not proof that an external earning platform paid the user.
 - BOT REPORTED COMPLETE is not the same as confirmed payout.
@@ -237,8 +275,10 @@ Next:
 - Starting a task does not create money.
 - Completing a task does not create money unless an actual earning is confirmed and recorded.
 - The project is not currently an autonomous account-level earning bot.
+- A UI test is not an actual external earning test.
+- Automation testing comes later, after the automation layer has actually been built and the manager/UI workflow is stable.
 
-## 13. User working preference
+## 14. User working preference
 
 The user prefers:
 - exact/simple instructions
@@ -247,10 +287,14 @@ The user prefers:
 - GitHub/mobile-friendly instructions
 - complete-file replacement when practical instead of difficult multi-location edits
 
-## 14. Continuation summary
+## 15. Continuation summary
 
 **CURRENT STATUS — 22 September 2026:**
 
-The Earning Manager Step 4 build is live on GitHub Pages. Approval Center, Task Manager and Earnings Tracker are separated and working. READY -> IN PROGRESS has been tested successfully. The current `index.html` now also contains the complete task-completion and real-earning-record workflow, including manual and bot task paths, withdrawal-request and paid states. The continuous research/decision layer and verification gates are also present. The next task is to test the already-implemented completion -> actual earning -> withdrawal -> paid workflow end-to-end on the live site before making further code changes.
+The Earning Manager Step 4 build is live on GitHub Pages. Approval Center, Task Manager and Earnings Tracker are separated and working. READY -> IN PROGRESS has been tested successfully. The current `index.html` now also contains the complete task-completion and real-earning-record workflow, including manual and bot task paths, withdrawal-request and paid states. The continuous research/decision layer and verification gates are also present.
+
+The next task is to test the already-implemented completion -> actual earning -> withdrawal -> paid workflow end-to-end **inside the Earning Manager using test data**, not to perform a real external earning opportunity yet.
+
+After the current workflow is verified, UI improvements should be handled as a separate controlled phase with a known-good backup and one change at a time. Deeper automation development/testing comes after the automation layer has actually been built.
 
 **DO NOT START OVER. USE THE GITHUB REPOSITORY + THIS HANDOFF AS THE CONTINUATION POINT.**
