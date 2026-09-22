@@ -38,6 +38,7 @@ h2{font-size:18px;margin:3px 0 10px}
 .earning-entry{margin-top:10px;padding:11px;background:#f9fafb;border-radius:12px}
 .earning-entry input{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:10px;font-size:14px;margin:7px 0}
 .task-type{font-size:10px;font-weight:800;border-radius:999px;padding:5px 7px;background:#eef2ff;white-space:nowrap}.bot-confirm{margin-top:10px;padding:11px;background:#fff7ed;border-radius:12px;border:1px solid #fed7aa}.bot-confirm input{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:10px;font-size:14px;margin:7px 0}
+.manager-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.manager-box{background:#f9fafb;border-radius:14px;padding:12px}.manager-box small{color:#6b7280}.manager-box b{display:block;font-size:16px;margin-top:3px}.factory{margin-top:10px;padding:11px;background:#eef2ff;border-radius:12px;border:1px solid #c7d2fe}.queue{margin-top:10px}.queue-item{padding:10px;border:1px solid #e5e7eb;border-radius:12px;margin-top:7px}.queue-item b{display:block;margin-bottom:3px}.ok{background:#dcfce7}.warn{background:#fef3c7}
 .verified{background:#dcfce7}
 .unverified{background:#fef3c7}
 .risk{background:#fee2e2}
@@ -115,9 +116,27 @@ nav button.active{color:#111827;font-weight:700}
     </div>
   </section>
 
+
+  <section class="card">
+    <h2>🧠 Manager Control Loop</h2>
+    <p class="note">The Manager continuously compares actual earnings against the current milestone, researches additional zero-upfront-cost opportunities when the pace is insufficient, and prepares approved opportunities for the AI Factory. It does not spend money, bypass platform rules, invent earnings, or make withdrawals without your approval.</p>
+    <div class="manager-grid">
+      <div class="manager-box"><small>Current milestone</small><b id="managerMilestone">R500</b></div>
+      <div class="manager-box"><small>Actual earned</small><b id="managerActual">R0.00</b></div>
+      <div class="manager-box"><small>Required remaining</small><b id="managerRemaining">R500.00</b></div>
+      <div class="manager-box"><small>Pace status</small><b id="managerPace">Waiting for data</b></div>
+    </div>
+    <div id="managerReport" class="queue"></div>
+    <div class="factory">
+      <b>🏭 AI Factory handoff</b>
+      <p class="note">When you approve a researched opportunity, the Manager creates a structured agent brief containing the job, evidence, allowed automation, completion signal, payout confirmation method, limits and test plan. The Factory can then use that brief to create the required agent(s).</p>
+    </div>
+  </section>
+
   <section class="card">
     <h2>🛡️ Scout Rules</h2>
-    <p class="note">Before recommending an opportunity, the agent checks country eligibility, requirements, payout, minimum withdrawal, payment method, legitimacy signals and whether automation is permitted.</p>
+    <p class="note">Before recommending an opportunity, the Manager checks eligibility, requirements, payout, minimum withdrawal, payment method, legitimacy signals, automation permission, expected net hourly rate, repeatability and whether completion/payout can be verified automatically.</p>
+    <p class="note"><b>Discovery is broader than the seed list:</b> the Manager may research microtasks, data-labeling, transcription, testing, research/data collection, content production, affiliate/referral work, digital services, open paid APIs/data work and other legitimate zero-upfront-cost paths. Seed platforms are examples, not the boundary of the system.</p>
     <p class="note"><b>Never:</b> bypass CAPTCHA, create fake identities/accounts, fake reviews or engagement, evade restrictions, or move money without approval.</p>
   </section>
 
@@ -194,11 +213,21 @@ let current='all';
 let tasks=JSON.parse(localStorage.getItem('earningTasks')||'[]');
 let earnings=JSON.parse(localStorage.getItem('earningRecords')||'[]');
 let approvals=JSON.parse(localStorage.getItem('approvalRequests')||'[]');
+let managerConfig=JSON.parse(localStorage.getItem('managerConfig')||'null')||{
+  milestone:500,
+  nextMilestone:1500,
+  researchTriggerDays:7,
+  minRate:25,
+  lastReview:null
+};
+let researchQueue=JSON.parse(localStorage.getItem('researchQueue')||'[]');
 
 function saveStep4Data(){
   localStorage.setItem('earningTasks',JSON.stringify(tasks));
   localStorage.setItem('earningRecords',JSON.stringify(earnings));
   localStorage.setItem('approvalRequests',JSON.stringify(approvals));
+  localStorage.setItem('managerConfig',JSON.stringify(managerConfig));
+  localStorage.setItem('researchQueue',JSON.stringify(researchQueue));
 }
 
 function showSection(name){
@@ -549,6 +578,126 @@ function markEarningPaid(i){
   toast('Payment marked as PAID.');
 }
 
+
+function getEarnedTotal(){
+  return earnings.reduce((sum,r)=>sum+(Number(r.amount)||0),0);
+}
+
+function getRecentDailyAverage(){
+  const now=Date.now();
+  const recent=earnings.filter(r=>r.createdAt && (now-Date.parse(r.createdAt))<=7*24*60*60*1000);
+  if(!recent.length) return 0;
+  const days=Math.max(1,Math.min(7,(now-Math.min(...recent.map(r=>Date.parse(r.createdAt))))/(24*60*60*1000)));
+  return recent.reduce((s,r)=>s+(Number(r.amount)||0),0)/days;
+}
+
+function evaluateManagerPace(){
+  const total=getEarnedTotal();
+  const remaining=Math.max(0,Number(managerConfig.milestone)-total);
+  const avg=getRecentDailyAverage();
+  const report=document.getElementById('managerReport');
+  const pace=document.getElementById('managerPace');
+
+  document.getElementById('managerMilestone').textContent=money(managerConfig.milestone);
+  document.getElementById('managerActual').textContent=money(total);
+  document.getElementById('managerRemaining').textContent=money(remaining);
+
+  if(remaining<=0){
+    pace.textContent='Milestone reached';
+    pace.parentElement.classList.add('ok');
+    report.innerHTML='<div class="queue-item ok"><b>✅ Milestone reached</b><span class="note">The Manager can now prepare the next-stage review. No automatic financial action is taken.</span></div>';
+    return;
+  }
+
+  if(!avg){
+    pace.textContent='Need earning data';
+    report.innerHTML='<div class="queue-item"><b>🔎 Research mode ready</b><span class="note">No reliable earning pace exists yet. The Manager should prioritize legitimate zero-upfront-cost opportunities that can be completed with permitted automation.</span></div>';
+    return;
+  }
+
+  const daysNeeded=remaining/avg;
+  const insufficient=daysNeeded>Number(managerConfig.researchTriggerDays);
+
+  pace.textContent=insufficient?'Research alternatives':'On pace';
+  pace.parentElement.classList.toggle('warn',insufficient);
+  report.innerHTML='<div class="queue-item '+(insufficient?'warn':'ok')+'"><b>'+(insufficient?'⚠️ Current pace needs improvement':'✅ Current pace is within the review window')+'</b><span class="note">Recent average: '+money(avg)+'/day. Estimated time to milestone: '+daysNeeded.toFixed(1)+' days. '+(insufficient?'The Manager should research additional opportunities rather than simply increasing your workload.':'Continue monitoring live results and replace weak opportunities when better verified options appear.')+'</span></div>';
+
+  if(insufficient) queueResearchAlternatives();
+}
+
+function queueResearchAlternatives(){
+  const categories=[
+    ['Microtasks','Short legitimate tasks with clear completion and payout signals.'],
+    ['Data labeling / evaluation','Human or AI-assisted labeling/evaluation work where automation is explicitly permitted.'],
+    ['Transcription / data conversion','Structured conversion work with machine-verifiable output and no prohibited impersonation.'],
+    ['Website / app testing','Paid testing where the platform permits the proposed workflow and completion can be verified.'],
+    ['Research / data collection','Public-data research, categorization or structured data tasks with clear deliverables.'],
+    ['Digital services','Repeatable low-cost digital services that can be fulfilled by agents without deceptive identity or spam.'],
+    ['Affiliate / referral opportunities','Legitimate programs with transparent terms and no forced spending, spam or fake referrals.'],
+    ['Open paid APIs / data work','Legitimate programs that pay for useful outputs or data where participation and automation are allowed.']
+  ];
+
+  categories.forEach(([name,description])=>{
+    if(!researchQueue.some(q=>q.category===name && q.status==='PENDING')){
+      researchQueue.push({
+        id:'research-'+Date.now()+'-'+name.toLowerCase().replace(/[^a-z0-9]+/g,'-'),
+        category:name,
+        description,
+        status:'PENDING',
+        createdAt:new Date().toISOString(),
+        automationRequired:true,
+        upfrontCost:0
+      });
+    }
+  });
+
+  saveStep4Data();
+  renderManagerQueue();
+}
+
+function renderManagerQueue(){
+  const report=document.getElementById('managerReport');
+  if(!report) return;
+
+  const pending=researchQueue.filter(q=>q.status==='PENDING');
+  if(!pending.length) return;
+
+  const items=pending.slice(0,4).map(q=>'<div class="queue-item"><b>🔬 Research: '+q.category+'</b><span class="note">'+q.description+' Manager must verify that automation is permitted and that payout can be confirmed before recommending it.</span><button class="mini" onclick="approveResearch('+JSON.stringify(q.id)+')">Approve research / AI Factory brief</button></div>').join('');
+  report.innerHTML += '<div class="queue">'+items+'</div>';
+}
+
+function approveResearch(id){
+  const q=researchQueue.find(x=>x.id===id);
+  if(!q) return;
+
+  q.status='APPROVED_FOR_RESEARCH';
+  q.approvedAt=new Date().toISOString();
+
+  const prompt='AI FACTORY AGENT BRIEF\\n\\nObjective: Research and validate legitimate online earning opportunities in the category "'+q.category+'".\\n\\nRequirements:\\n- Zero upfront cost to the user.\\n- Automation must be explicitly permitted by the target platform.\\n- Do not create fake identities, fake engagement, spam, bypass CAPTCHA/rate limits, evade geo restrictions, or misrepresent the user.\\n- Verify eligibility, payout amount, minimum withdrawal, completion signal, payout confirmation method, API/browser requirements and expected net hourly rate.\\n- Prefer jobs with machine-verifiable completion and payout evidence.\\n- Reject opportunities where automation is prohibited or payout cannot be independently confirmed.\\n- Return evidence, risks, setup requirements, estimated net rate, and a proposed task state machine.\\n- Do not spend money or withdraw funds.\\n- Stop and request user approval before any external side effect.';
+
+  q.factoryPrompt=prompt;
+
+  approvals.push({
+    title:'AI Factory: '+q.category,
+    description:'Research brief approved. Review the generated agent brief before an agent is built or connected to any external service.',
+    status:'PENDING',
+    type:'AI_FACTORY_RESEARCH',
+    researchId:q.id,
+    factoryPrompt:prompt,
+    createdAt:new Date().toISOString()
+  });
+
+  saveStep4Data();
+  renderApprovals();
+  renderManagerQueue();
+  toast('AI Factory brief prepared for approval.');
+}
+
+function renderManager(){
+  evaluateManagerPace();
+  renderManagerQueue();
+}
+
 function money(value){
   const n=Number(value)||0;
   return 'R'+n.toFixed(2);
@@ -600,6 +749,7 @@ function renderEarnings(){
 }
 
 function refreshSummary(){
+  renderManager();
   let total=0;
   let pending=0;
   let withdrawable=0;
@@ -628,6 +778,7 @@ function refreshSummary(){
 loadScout();
 renderApprovals();
 renderTasks();
+renderManager();
 renderEarnings();
 refreshSummary();
 </script>
