@@ -35,6 +35,8 @@ h2{font-size:18px;margin:3px 0 10px}
 .optop{display:flex;justify-content:space-between;gap:8px}
 .op h3{margin:0;font-size:16px}
 .status{font-size:10px;font-weight:800;border-radius:999px;padding:5px 7px;background:#e5e7eb;white-space:nowrap}
+.earning-entry{margin-top:10px;padding:11px;background:#f9fafb;border-radius:12px}
+.earning-entry input{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:10px;font-size:14px;margin:7px 0}
 .verified{background:#dcfce7}
 .unverified{background:#fef3c7}
 .risk{background:#fee2e2}
@@ -395,6 +397,21 @@ function renderTasks(){
       ${t.status==='READY'
         ? `<button class="mini" onclick="startTask(${i})">▶ Start Task</button>`
         : ''}
+      ${t.status==='IN PROGRESS'
+        ? `<button class="mini" onclick="completeTask(${i})">✅ Mark Task Complete</button>`
+        : ''}
+      ${t.status==='COMPLETE'
+        ? `
+          <div class="earning-entry">
+            <div class="note"><b>Task complete.</b> Enter the actual amount you earned. The app will not invent or estimate this amount.</div>
+            <input id="earnedAmount-${i}" type="number" min="0" step="0.01" placeholder="Amount earned (R)">
+            <button class="mini" onclick="recordTaskEarning(${i})">💰 Record Earning</button>
+          </div>
+        `
+        : ''}
+      ${t.status==='EARNING RECORDED'
+        ? `<p class="note">Earning recorded: <b>${money(t.earnedAmount)}</b></p>`
+        : ''}
     </div>
   `).join('');
 }
@@ -409,6 +426,50 @@ function startTask(i){
   renderTasks();
 
   toast('Task started.');
+}
+
+function completeTask(i){
+  if(!tasks[i]) return;
+  if(tasks[i].status!=='IN PROGRESS') return;
+
+  tasks[i].status='COMPLETE';
+
+  saveStep4Data();
+  renderTasks();
+
+  toast('Task marked complete. Enter your actual earnings.');
+}
+
+function recordTaskEarning(i){
+  if(!tasks[i]) return;
+  if(tasks[i].status!=='COMPLETE') return;
+
+  const input=document.getElementById('earnedAmount-'+i);
+  const amount=Number(input && input.value);
+
+  if(!Number.isFinite(amount) || amount<0){
+    toast('Enter the actual amount earned first.');
+    return;
+  }
+
+  earnings.push({
+    id:Date.now(),
+    taskId:tasks[i].id,
+    title:tasks[i].title,
+    amount:Number(amount.toFixed(2)),
+    status:'RECORDED',
+    createdAt:new Date().toISOString()
+  });
+
+  tasks[i].earnedAmount=Number(amount.toFixed(2));
+  tasks[i].status='EARNING RECORDED';
+
+  saveStep4Data();
+  renderTasks();
+  renderEarnings();
+  refreshSummary();
+
+  toast('Earning recorded.');
 }
 
 function money(value){
