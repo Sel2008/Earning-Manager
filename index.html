@@ -37,6 +37,7 @@ h2{font-size:18px;margin:3px 0 10px}
 .status{font-size:10px;font-weight:800;border-radius:999px;padding:5px 7px;background:#e5e7eb;white-space:nowrap}
 .earning-entry{margin-top:10px;padding:11px;background:#f9fafb;border-radius:12px}
 .earning-entry input{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:10px;font-size:14px;margin:7px 0}
+.task-type{font-size:10px;font-weight:800;border-radius:999px;padding:5px 7px;background:#eef2ff;white-space:nowrap}
 .verified{background:#dcfce7}
 .unverified{background:#fef3c7}
 .risk{background:#fee2e2}
@@ -352,6 +353,8 @@ function saveForReview(name){
     id:Date.now(),
     title:name,
     status:'SAVED',
+    taskType:'MANUAL',
+    earningStatus:null,
     createdAt:new Date().toISOString()
   };
 
@@ -387,33 +390,64 @@ function renderTasks(){
     return;
   }
 
-  box.innerHTML=tasks.map((t,i)=>`
+  box.innerHTML=tasks.map((t,i)=>{
+    const taskType=t.taskType||'MANUAL';
+    const earningStatus=t.earningStatus||null;
+
+    return \`
     <div class="op">
       <div class="optop">
-        <h3>${t.title}</h3>
-        <span class="status">${t.status}</span>
+        <h3>\${t.title}</h3>
+        <span class="status">\${t.status}</span>
       </div>
-      <p class="note">Created: ${new Date(t.createdAt).toLocaleString()}</p>
-      ${t.status==='READY'
-        ? `<button class="mini" onclick="startTask(${i})">▶ Start Task</button>`
+      <p class="note">Created: \${new Date(t.createdAt).toLocaleString()}</p>
+      <p><span class="task-type">\${taskType==='BOT'?'🤖 BOT TASK':'👤 MANUAL TASK'}</span></p>
+
+      \${t.status==='READY'
+        ? \`
+          <button class="mini" onclick="startTask(\${i})">▶ \${taskType==='BOT'?'Start Bot Task':'Start Task'}</button>
+          <button class="mini" onclick="toggleTaskType(\${i})">\${taskType==='BOT'?'👤 Make Manual':'🤖 Mark Bot-Handled'}</button>
+        \`
         : ''}
-      ${t.status==='IN PROGRESS'
-        ? `<button class="mini" onclick="completeTask(${i})">✅ Mark Task Complete</button>`
+
+      \${t.status==='IN PROGRESS'
+        ? \`<button class="mini" onclick="completeTask(\${i})">✅ \${taskType==='BOT'?'Bot Reports Task Complete':'Mark Task Complete'}</button>\`
         : ''}
-      ${t.status==='COMPLETE'
-        ? `
+
+      \${t.status==='COMPLETE'
+        ? \`
           <div class="earning-entry">
-            <div class="note"><b>Task complete.</b> Enter the actual amount you earned. The app will not invent or estimate this amount.</div>
-            <input id="earnedAmount-${i}" type="number" min="0" step="0.01" placeholder="Amount earned (R)">
-            <button class="mini" onclick="recordTaskEarning(${i})">💰 Record Earning</button>
+            <div class="note"><b>Task complete.</b> \${taskType==='BOT'
+              ? 'Enter the payout amount confirmed by the earning platform. The app will not invent or estimate the payout.'
+              : 'Enter the actual amount you earned. The app will not invent or estimate this amount.'}</div>
+            <input id="earnedAmount-\${i}" type="number" min="0" step="0.01" placeholder="Confirmed amount earned (R)">
+            <button class="mini" onclick="recordTaskEarning(\${i})">💰 Record Earning</button>
           </div>
-        `
+        \`
         : ''}
-      ${t.status==='EARNING RECORDED'
-        ? `<p class="note">Earning recorded: <b>${money(t.earnedAmount)}</b></p>`
+
+      \${t.status==='EARNING RECORDED'
+        ? \`
+          <p class="note">Earning recorded: <b>\${money(t.earnedAmount)}</b> • Status: <b>\${earningStatus||'EARNED'}</b></p>
+          \${earningStatus==='EARNED' ? \`<button class="mini" onclick="requestWithdrawal(\${i})">🏦 Request Withdrawal</button>\` : ''}
+          \${earningStatus==='WITHDRAWAL REQUESTED' ? \`<button class="mini" onclick="markEarningPaid(\${i})">✅ Mark Paid / Wallet Confirmed</button>\` : ''}
+          \${earningStatus==='PAID' ? \`<p class="note">Payment marked <b>PAID</b>. Wallet/payment confirmation should only be recorded when it is actually confirmed.</p>\` : ''}
+        \`
         : ''}
     </div>
-  `).join('');
+  \`;
+  }).join('');
+}
+
+function toggleTaskType(i){
+  if(!tasks[i] || tasks[i].status!=='READY') return;
+
+  tasks[i].taskType=(tasks[i].taskType||'MANUAL')==='BOT'?'MANUAL':'BOT';
+
+  saveStep4Data();
+  renderTasks();
+
+  toast(tasks[i].taskType==='BOT' ? 'Task set to BOT-HANDLED.' : 'Task set to MANUAL.');
 }
 
 function startTask(i){
@@ -425,7 +459,7 @@ function startTask(i){
   saveStep4Data();
   renderTasks();
 
-  toast('Task started.');
+  toast(tasks[i].taskType==='BOT' ? 'Bot task started.' : 'Task started.');
 }
 
 function completeTask(i){
@@ -437,7 +471,9 @@ function completeTask(i){
   saveStep4Data();
   renderTasks();
 
-  toast('Task marked complete. Enter your actual earnings.');
+  toast(tasks[i].taskType==='BOT'
+    ? 'Bot reported task complete. Confirm the actual platform payout.'
+    : 'Task marked complete. Enter your actual earnings.');
 }
 
 function recordTaskEarning(i){
@@ -448,7 +484,7 @@ function recordTaskEarning(i){
   const amount=Number(input && input.value);
 
   if(!Number.isFinite(amount) || amount<0){
-    toast('Enter the actual amount earned first.');
+    toast('Enter the confirmed actual amount earned first.');
     return;
   }
 
@@ -457,11 +493,13 @@ function recordTaskEarning(i){
     taskId:tasks[i].id,
     title:tasks[i].title,
     amount:Number(amount.toFixed(2)),
-    status:'RECORDED',
+    status:'EARNED',
+    taskType:tasks[i].taskType||'MANUAL',
     createdAt:new Date().toISOString()
   });
 
   tasks[i].earnedAmount=Number(amount.toFixed(2));
+  tasks[i].earningStatus='EARNED';
   tasks[i].status='EARNING RECORDED';
 
   saveStep4Data();
@@ -469,7 +507,41 @@ function recordTaskEarning(i){
   renderEarnings();
   refreshSummary();
 
-  toast('Earning recorded.');
+  toast('Earning recorded as EARNED.');
+}
+
+function requestWithdrawal(i){
+  if(!tasks[i] || tasks[i].status!=='EARNING RECORDED') return;
+  if(tasks[i].earningStatus!=='EARNED') return;
+
+  tasks[i].earningStatus='WITHDRAWAL REQUESTED';
+
+  const record=earnings.find(r=>r.taskId===tasks[i].id && (r.status==='EARNED' || r.status==='RECORDED'));
+  if(record) record.status='WITHDRAWAL REQUESTED';
+
+  saveStep4Data();
+  renderTasks();
+  renderEarnings();
+  refreshSummary();
+
+  toast('Withdrawal marked as requested.');
+}
+
+function markEarningPaid(i){
+  if(!tasks[i] || tasks[i].status!=='EARNING RECORDED') return;
+  if(tasks[i].earningStatus!=='WITHDRAWAL REQUESTED') return;
+
+  tasks[i].earningStatus='PAID';
+
+  const record=earnings.find(r=>r.taskId===tasks[i].id && r.status==='WITHDRAWAL REQUESTED');
+  if(record) record.status='PAID';
+
+  saveStep4Data();
+  renderTasks();
+  renderEarnings();
+  refreshSummary();
+
+  toast('Payment marked as PAID.');
 }
 
 function money(value){
@@ -490,6 +562,7 @@ function renderEarnings(){
     total+=amount;
 
     if(r.status==='PENDING') pending+=amount;
+    if(r.status==='EARNED') withdrawable+=amount;
     if(r.status==='WITHDRAWABLE') withdrawable+=amount;
 
     if(r.createdAt && new Date(r.createdAt).toDateString()===todayKey){
@@ -532,6 +605,7 @@ function refreshSummary(){
     const amount=Number(r.amount)||0;
     total+=amount;
     if(r.status==='PENDING') pending+=amount;
+    if(r.status==='EARNED') withdrawable+=amount;
     if(r.status==='WITHDRAWABLE') withdrawable+=amount;
     if(r.createdAt && new Date(r.createdAt).toDateString()===todayKey) today+=amount;
   });
