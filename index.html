@@ -394,48 +394,48 @@ function renderTasks(){
     const taskType=t.taskType||'MANUAL';
     const earningStatus=t.earningStatus||null;
 
-    return \`
+    return `
     <div class="op">
       <div class="optop">
-        <h3>\${t.title}</h3>
-        <span class="status">\${t.status}</span>
+        <h3>${t.title}</h3>
+        <span class="status">${t.status}</span>
       </div>
-      <p class="note">Created: \${new Date(t.createdAt).toLocaleString()}</p>
-      <p><span class="task-type">\${taskType==='BOT'?'🤖 BOT TASK':'👤 MANUAL TASK'}</span></p>
+      <p class="note">Created: ${new Date(t.createdAt).toLocaleString()}</p>
+      <p><span class="task-type">${taskType==='BOT'?'🤖 BOT TASK':'👤 MANUAL TASK'}</span></p>
 
-      \${t.status==='READY'
-        ? \`
-          <button class="mini" onclick="startTask(\${i})">▶ \${taskType==='BOT'?'Start Bot Task':'Start Task'}</button>
-          <button class="mini" onclick="toggleTaskType(\${i})">\${taskType==='BOT'?'👤 Make Manual':'🤖 Mark Bot-Handled'}</button>
-        \`
+      ${t.status==='READY'
+        ? `
+          <button class="mini" onclick="startTask(${i})">▶ ${taskType==='BOT'?'Start Bot Task':'Start Task'}</button>
+          <button class="mini" onclick="toggleTaskType(${i})">${taskType==='BOT'?'👤 Make Manual':'🤖 Mark Bot-Handled'}</button>
+        `
         : ''}
 
-      \${t.status==='IN PROGRESS'
-        ? \`<button class="mini" onclick="completeTask(\${i})">✅ \${taskType==='BOT'?'Bot Reports Task Complete':'Mark Task Complete'}</button>\`
+      ${t.status==='IN PROGRESS'
+        ? `<button class="mini" onclick="completeTask(${i})">✅ ${taskType==='BOT'?'Bot Reports Task Complete':'Mark Task Complete'}</button>`
         : ''}
 
-      \${t.status==='COMPLETE'
-        ? \`
+      ${t.status==='COMPLETE'
+        ? `
           <div class="earning-entry">
-            <div class="note"><b>Task complete.</b> \${taskType==='BOT'
+            <div class="note"><b>Task complete.</b> ${taskType==='BOT'
               ? 'Enter the payout amount confirmed by the earning platform. The app will not invent or estimate the payout.'
               : 'Enter the actual amount you earned. The app will not invent or estimate this amount.'}</div>
-            <input id="earnedAmount-\${i}" type="number" min="0" step="0.01" placeholder="Confirmed amount earned (R)">
-            <button class="mini" onclick="recordTaskEarning(\${i})">💰 Record Earning</button>
+            <input id="earnedAmount-${i}" type="number" min="0" step="0.01" placeholder="Confirmed amount earned (R)">
+            <button class="mini" onclick="recordTaskEarning(${i})">💰 Record Earning</button>
           </div>
-        \`
+        `
         : ''}
 
-      \${t.status==='EARNING RECORDED'
-        ? \`
-          <p class="note">Earning recorded: <b>\${money(t.earnedAmount)}</b> • Status: <b>\${earningStatus||'EARNED'}</b></p>
-          \${earningStatus==='EARNED' ? \`<button class="mini" onclick="requestWithdrawal(\${i})">🏦 Request Withdrawal</button>\` : ''}
-          \${earningStatus==='WITHDRAWAL REQUESTED' ? \`<button class="mini" onclick="markEarningPaid(\${i})">✅ Mark Paid / Wallet Confirmed</button>\` : ''}
-          \${earningStatus==='PAID' ? \`<p class="note">Payment marked <b>PAID</b>. Wallet/payment confirmation should only be recorded when it is actually confirmed.</p>\` : ''}
-        \`
+      ${t.status==='EARNING RECORDED'
+        ? `
+          <p class="note">Earning recorded: <b>${money(t.earnedAmount)}</b> • Status: <b>${earningStatus||'EARNED'}</b></p>
+          ${earningStatus==='EARNED' ? `<button class="mini" onclick="requestWithdrawal(${i})">🏦 Request Withdrawal</button>` : ''}
+          ${earningStatus==='WITHDRAWAL REQUESTED' ? `<button class="mini" onclick="markEarningPaid(${i})">✅ Mark Paid / Wallet Confirmed</button>` : ''}
+          ${earningStatus==='PAID' ? `<p class="note">Payment marked <b>PAID</b>. Wallet/payment confirmation should only be recorded when it is actually confirmed.</p>` : ''}
+        `
         : ''}
     </div>
-  \`;
+  `;
   }).join('');
 }
 
