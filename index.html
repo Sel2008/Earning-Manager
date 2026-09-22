@@ -130,6 +130,7 @@ nav button.active{color:#111827;font-weight:700}
     </div>
     <div id="managerReport" class="queue"></div>
     <div id="managerOpportunityReport" class="queue"></div>
+    <div id="verificationReport" class="queue"></div>
     <div class="factory">
       <b>🏭 AI Factory handoff</b>
       <p class="note">When you approve a researched opportunity, the Manager creates a structured agent brief containing the job, evidence, allowed automation, completion signal, payout confirmation method, limits and test plan. The Factory can then use that brief to create the required agent(s).</p>
@@ -333,7 +334,7 @@ async function loadScout(){
 
 function opportunityDecision(o){
   const level=String(o.automation_level||'UNKNOWN').toUpperCase();
-  const permitted=o.automation_permitted!==false;
+  const permitted=o.automation_permitted===true;
   const upfront=Number(o.upfront_cost||0);
   const rate=Number(o.expected_hourly_rate||parseFloat(String(o.hour||'').replace(/[^0-9.]/g,''))||0);
   const effort=Number(o.user_minutes_per_task||30);
@@ -350,10 +351,39 @@ function opportunityDecision(o){
   if(rate>=Number(managerConfig.minRate||25)) score+=15;
   else if(rate>=10) score+=7;
   if(effort<=15) score+=5;
-  const reject=upfront>0 || permitted===false;
-  let decision=reject?'REJECT':(level==='HUMAN'&&rate>=Number(managerConfig.minRate||25)?'HUMAN_REVIEW':(score>=70?'AUTO_PRIORITY':'HYBRID_REVIEW'));
-  const reason=decision==='HUMAN_REVIEW'?'High-value human work: surfaced so you can decide whether you have time.':decision==='AUTO_PRIORITY'?'Strong fit for permitted automation and low user labour.':decision==='REJECT'?'Fails a hard safety/compliance rule.':(o.verification&&o.verification.status==='SOURCE_INSPECTED'?'Source inspected, but key eligibility/payout facts still require confirmation.':'Potentially useful, but needs more verification before priority.');
+  const verification=o.verification||{};
+  const automationVerified=verification.automation_permission_status==='VERIFIED' || permitted===true;
+  const payoutVerified=verification.payout_status==='CONFIRMED' || payout===true;
+  const eligibilityVerified=verification.eligibility_status==='VERIFIED';
+  const reject=upfront>0 || permitted===false || verification.automation_permission_status==='PROHIBITED';
+  let decision=reject?'REJECT':(level==='HUMAN'&&rate>=Number(managerConfig.minRate||25)?'HUMAN_REVIEW':(automationVerified&&payoutVerified&&eligibilityVerified&&verified&&score>=70?'AUTO_PRIORITY':'HYBRID_REVIEW'));
+  const reason=decision==='HUMAN_REVIEW'?'High-value human work: surfaced so you can decide whether you have time.':decision==='AUTO_PRIORITY'?'Strong fit with verified eligibility, permitted automation, machine-verifiable completion and confirmed payout.':decision==='REJECT'?'Fails a hard safety/compliance rule.':(o.verification&&o.verification.status==='SOURCE_INSPECTED'?'Source inspected, but eligibility, automation permission, compensation and/or payout facts still require authoritative confirmation.':'Potentially useful, but needs verification before priority.');
   return {score,decision,reason,rate,effort,level};
+}
+
+function verificationLabel(value){
+  const v=String(value||'UNKNOWN').replace(/_/g,' ');
+  if(v==='VERIFIED'||v==='CONFIRMED') return '✅ '+v;
+  if(v==='PROHIBITED'||v==='NOT ELIGIBLE') return '⛔ '+v;
+  if(v==='PARTIAL'||v==='EVIDENCE FOUND') return '🟡 '+v;
+  return '⚪ '+v;
+}
+
+function renderVerificationReport(){
+  const box=document.getElementById('verificationReport');
+  if(!box) return;
+  const items=(opportunities||[]).filter(o=>o.verification).slice(0,6);
+  if(!items.length){box.innerHTML='';return;}
+  box.innerHTML='<div class="queue-item"><b>🔐 Verification checklist</b><span class="note">The Manager distinguishes source inspection from proof. UNKNOWN means it has not been verified yet.</span></div>'+
+    items.map(o=>{
+      const v=o.verification||{};
+      return '<div class="queue-item"><b>'+o.name+'</b>'+
+        '<div class="score">Eligibility: '+verificationLabel(v.eligibility_status)+' • Compensation: '+verificationLabel(v.compensation_status)+'</div>'+
+        '<div class="score">Automation: '+verificationLabel(v.automation_permission_status)+' • Payout: '+verificationLabel(v.payout_status)+'</div>'+
+        '<span class="note">Country/account eligibility: '+verificationLabel(v.country_eligibility)+' • Confidence: '+(v.confidence||'LOW')+'</span>'+
+        (v.evidence_notes&&v.evidence_notes.length?'<div class="note" style="margin-top:5px">'+v.evidence_notes.slice(0,2).join(' ')+'</div>':'')+
+      '</div>';
+    }).join('');
 }
 
 function renderManagerOpportunityReport(){
@@ -394,7 +424,7 @@ function render(){
         <div>💳 Withdrawal<b>${o.withdraw}</b></div>
       </div>
       <div class="tags">Why this status: ${o.reason}</div>
-      <div class="decision"><b>Manager decision:</b> ${opportunityDecision(o).decision.replace(/_/g,' ')} • Score ${opportunityDecision(o).score}<br>${opportunityDecision(o).reason}</div>
+      <div class="decision"><b>Manager decision:</b> ${opportunityDecision(o).decision.replace(/_/g,' ')} • Score ${opportunityDecision(o).score}<br>${opportunityDecision(o).reason}<br><span class="note">Verification: ${o.verification?o.verification.status||'STRUCTURED':'NOT AVAILABLE'} • Eligibility ${o.verification?String(o.verification.eligibility_status||'UNKNOWN').replace(/_/g,' '):'UNKNOWN'} • Automation ${o.verification?String(o.verification.automation_permission_status||'UNKNOWN').replace(/_/g,' '):'UNKNOWN'} • Payout ${o.verification?String(o.verification.payout_status||'UNKNOWN').replace(/_/g,' '):'UNKNOWN'}</span></div>
       <button class="mini" onclick="saveForReview('${o.name.replace(/'/g,"\\'")}')">＋ Save for review</button>
     </div>
   `).join('');
@@ -737,6 +767,7 @@ function renderManager(){
   evaluateManagerPace();
   renderManagerQueue();
   renderManagerOpportunityReport();
+  renderVerificationReport();
 }
 
 function money(value){
