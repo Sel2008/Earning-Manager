@@ -1,0 +1,63 @@
+import fs from 'node:fs/promises';
+
+const FEED_PATH='data/opportunities.json';
+const SOURCES=[
+  {name:'Remote OK',url:'https://remoteok.com/remote-jobs.rss'},
+  {name:'Remotive',url:'https://remotive.com/remote-jobs/feed'},
+  {name:'We Work Remotely',url:'https://weworkremotely.com/remote-jobs.rss'}
+];
+
+function strip(s){return s.replace(/<[^>]+>/g,' ').replace(/<!\[CDATA\[|\]\]>/g,' ').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/\s+/g,' ').trim();}
+function tag(block,name){const m=block.match(new RegExp('<'+name+'[^>]*>([\\s\\S]*?)</'+name+'>','i'));return m?strip(m[1]):'';}
+function parseItems(xml){
+  return [...xml.matchAll(/<(?:item|entry)[^>]*>([\\s\\S]*?)<\\/(?:item|entry)>/gi)].map(m=>m[1]).map(b=>({
+    title:tag(b,'title'),
+    description:tag(b,'description')||tag(b,'summary'),
+    link:(b.match(/<link[^>]*href=["']([^"']+)["']/i)||[])[1]||tag(b,'link')
+  })).filter(x=>x.title&&x.link);
+}
+
+const feed=JSON.parse(await fs.readFile(FEED_PATH,'utf8'));
+const existing=new Set((feed.opportunities||[]).map(o=>o.name+'|'+(o.source_url||'')));
+const discovered=[];
+for(const source of SOURCES){
+  try{
+    const res=await fetch(source.url,{headers:{'user-agent':'Earning-Manager-Research/1.0'}});
+    if(!res.ok) continue;
+    const xml=await res.text();
+    for(const item of parseItems(xml).slice(0,30)){
+      const name=item.title.slice(0,140);
+      if(existing.has(name+'|'+item.link)) continue;
+      discovered.push({
+        name,
+        task:item.description.slice(0,500)||'Remote online work opportunity; details require source verification.',
+        time:'Source-dependent',
+        pay:'Source-dependent',
+        hour:'Needs verification',
+        status:'UNVERIFIED',
+        type:'user',
+        withdraw:'Needs verification',
+        reason:'Discovered by the scheduled research worker. Eligibility, compensation, automation permission and payout must be verified before recommendation.',
+        source_checked:true,
+        source_url:item.link,
+        research_source:source.name,
+        integration_status:'RESEARCH_REQUIRED',
+        automation_level:'UNKNOWN',
+        automation_permitted:null,
+        user_minutes_per_task:30,
+        expected_hourly_rate:null,
+        machine_verifiable_completion:false,
+        payout_confirmed:false,
+        upfront_cost:0,
+        research_confidence:'LOW',
+        priority_class:'HUMAN_REVIEW',
+        discovered_at:new Date().toISOString()
+      });
+    }
+  }catch(e){}
+}
+feed.generated_at=new Date().toISOString();
+feed.last_continuous_research={ran_at:feed.generated_at,source_count:SOURCES.length,discovered_count:discovered.length};
+feed.opportunities=[...(feed.opportunities||[]),...discovered].slice(-200);
+await fs.writeFile(FEED_PATH,JSON.stringify(feed,null,2)+'\n');
+console.log(JSON.stringify(feed.last_continuous_research));
