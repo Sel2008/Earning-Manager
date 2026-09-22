@@ -13,7 +13,16 @@
       "reason": "Platform identified for integration research. Current account-level offers, eligibility, payout amount and withdrawal method must be confirmed before an automated task can record earnings.",
       "source_checked": true,
       "source_url": "https://support.cointiply.com/en/support/solutions/articles/36000101129-i-can-t-get-offers-in-my-country-",
-      "integration_status": "RESEARCH_REQUIRED"
+      "integration_status": "RESEARCH_REQUIRED",
+      "automation_level": "HUMAN",
+      "automation_permitted": null,
+      "user_minutes_per_task": 30,
+      "expected_hourly_rate": null,
+      "machine_verifiable_completion": false,
+      "payout_confirmed": false,
+      "upfront_cost": 0,
+      "research_confidence": "PARTIAL",
+      "priority_class": "HUMAN_REVIEW"
     },
     {
       "name": "Publish0x",
@@ -27,7 +36,16 @@
       "reason": "Platform identified for integration research. Current account-level earning and withdrawal mechanisms must be confirmed before automation.",
       "source_checked": false,
       "source_url": "https://www.publish0x.com/page/how-it-works",
-      "integration_status": "RESEARCH_REQUIRED"
+      "integration_status": "RESEARCH_REQUIRED",
+      "automation_level": "HUMAN",
+      "automation_permitted": null,
+      "user_minutes_per_task": 30,
+      "expected_hourly_rate": null,
+      "machine_verifiable_completion": false,
+      "payout_confirmed": false,
+      "upfront_cost": 0,
+      "research_confidence": "LOW",
+      "priority_class": "HUMAN_REVIEW"
     },
     {
       "name": "Binance Learn & Earn",
@@ -41,7 +59,16 @@
       "reason": "Platform identified for integration research. Campaign eligibility, reward confirmation and withdrawal mechanisms must be confirmed before automation.",
       "source_checked": true,
       "source_url": "https://www.binance.com/en/support/faq/detail/3819c21bd5fb493fa5057c727043cb14",
-      "integration_status": "RESEARCH_REQUIRED"
+      "integration_status": "RESEARCH_REQUIRED",
+      "automation_level": "HUMAN",
+      "automation_permitted": null,
+      "user_minutes_per_task": 30,
+      "expected_hourly_rate": null,
+      "machine_verifiable_completion": false,
+      "payout_confirmed": false,
+      "upfront_cost": 0,
+      "research_confidence": "PARTIAL",
+      "priority_class": "HUMAN_REVIEW"
     },
     {
       "name": "FreeCash",
@@ -53,7 +80,16 @@
       "type": "user",
       "withdraw": "Platform-dependent",
       "reason": "Platform identified for integration research. Current offer eligibility, completion callbacks/API options and payout confirmation must be confirmed before automation.",
-      "integration_status": "RESEARCH_REQUIRED"
+      "integration_status": "RESEARCH_REQUIRED",
+      "automation_level": "HUMAN",
+      "automation_permitted": null,
+      "user_minutes_per_task": 30,
+      "expected_hourly_rate": null,
+      "machine_verifiable_completion": false,
+      "payout_confirmed": false,
+      "upfront_cost": 0,
+      "research_confidence": "LOW",
+      "priority_class": "HUMAN_REVIEW"
     },
     {
       "name": "Upfront-payment earning offer",
@@ -64,7 +100,16 @@
       "status": "HIGH RISK",
       "type": "risk",
       "withdraw": "Unclear",
-      "reason": "The original agent rules flag upfront payment and unrealistic guaranteed returns as scam warning signs."
+      "reason": "The original agent rules flag upfront payment and unrealistic guaranteed returns as scam warning signs.",
+      "automation_level": "UNKNOWN",
+      "automation_permitted": false,
+      "user_minutes_per_task": 30,
+      "expected_hourly_rate": null,
+      "machine_verifiable_completion": false,
+      "payout_confirmed": false,
+      "upfront_cost": 10,
+      "research_confidence": "LOW",
+      "priority_class": "REJECT"
     }
   ],
   "discovery_mode": "CONTINUOUS",
@@ -81,20 +126,62 @@
   ],
   "discovery_rules": {
     "upfront_cost": 0,
-    "automation_required": true,
+    "automation_preferred": true,
+    "allow_high_value_human_tasks": true,
     "verify_automation_permission": true,
-    "require_machine_verifiable_completion": true,
+    "require_machine_verifiable_completion_for_automation": true,
     "require_payout_confirmation": true,
     "no_fake_identity": true,
     "no_spam_or_fake_engagement": true,
     "no_captcha_bypass": true,
     "no_geo_restriction_bypass": true,
-    "no_unapproved_withdrawals": true
+    "no_unapproved_withdrawals": true,
+    "decision_order": [
+      "FULL automation first",
+      "PARTIAL automation second",
+      "HIGH_VALUE human-required opportunities remain visible for user decision",
+      "LOW_RETURN_HIGH_LABOUR opportunities are deprioritized",
+      "PROHIBITED_AUTOMATION or upfront-cost opportunities are rejected"
+    ]
   },
   "seed_examples_note": "The named platforms in this file are seed examples only. They are not the full opportunity universe. The Manager should continuously research other legitimate opportunities and prefer those that permit automation and have independently verifiable completion and payout.",
   "current_research_notes": {
     "Cointiply": "Current terms explicitly prohibit automating tasks, games or faucet spins; do not build an automation agent for those activities.",
     "FreeCash": "Current terms prohibit bots, scripts and other automation that simulate human activity and prohibit automated website access; do not build an automation agent for offer completion.",
     "Binance_Learn_and_Earn": "Current official guidance describes targeted eligibility, identity verification, quiz completion and later reward distribution; any automation must be separately verified as permitted before implementation."
+  },
+  "continuous_decision_layer": {
+    "enabled": true,
+    "objective": "Maximize sustainable earnings while minimizing required user labour, not maximize automation at any cost.",
+    "hard_reject_conditions": [
+      "upfront_cost>0",
+      "automation_explicitly_prohibited",
+      "fake_identity_or_engagement",
+      "captcha_or_geo_bypass",
+      "unverified_payout"
+    ],
+    "scoring_factors": [
+      "automation_level",
+      "expected_hourly_rate",
+      "user_minutes_per_task",
+      "automation_permission",
+      "machine_verifiable_completion",
+      "payout_confirmation",
+      "upfront_cost",
+      "research_confidence"
+    ],
+    "user_approval_required_for": [
+      "external_account_actions",
+      "agent_deployment",
+      "spending",
+      "withdrawals",
+      "financial_connections"
+    ],
+    "human_opportunity_rule": "If expected value is high enough to justify the user's time, surface the opportunity with required time, expected rate, eligibility and compliance evidence instead of silently filtering it out."
+  },
+  "continuous_research": {
+    "mode": "CONTINUOUS",
+    "feed_role": "Research results are stored as structured opportunity records; the Manager scores them whenever the feed loads.",
+    "next_layer": "A scheduled research worker should refresh this feed from permitted public sources and write evidence-backed records without taking external earning actions."
   }
 }
