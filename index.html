@@ -121,7 +121,7 @@ nav button.active{color:#111827;font-weight:700}
 
   <section class="card">
     <h2>🧠 Manager Control Loop</h2>
-    <p class="note">The Manager continuously compares actual earnings against the current milestone, researches additional zero-upfront-cost opportunities when the pace is insufficient, and prepares approved opportunities for the AI Factory. It does not spend money, bypass platform rules, invent earnings, or make withdrawals without your approval.</p>
+    <p class="note">The Manager continuously compares actual earnings against the current milestone, researches additional zero-upfront-cost opportunities when the pace is insufficient, inspects source evidence, scores opportunities by value and user effort, and prepares approved opportunities for the AI Factory. It does not spend money, bypass platform rules, invent earnings, or make withdrawals without your approval.</p>
     <div class="manager-grid">
       <div class="manager-box"><small>Current milestone</small><b id="managerMilestone">R500</b></div>
       <div class="manager-box"><small>Actual earned</small><b id="managerActual">R0.00</b></div>
@@ -352,7 +352,7 @@ function opportunityDecision(o){
   if(effort<=15) score+=5;
   const reject=upfront>0 || permitted===false;
   let decision=reject?'REJECT':(level==='HUMAN'&&rate>=Number(managerConfig.minRate||25)?'HUMAN_REVIEW':(score>=70?'AUTO_PRIORITY':'HYBRID_REVIEW'));
-  const reason=decision==='HUMAN_REVIEW'?'High-value human work: surfaced so you can decide whether you have time.':decision==='AUTO_PRIORITY'?'Strong fit for permitted automation and low user labour.':decision==='REJECT'?'Fails a hard safety/compliance rule.':'Potentially useful, but needs more verification before priority.';
+  const reason=decision==='HUMAN_REVIEW'?'High-value human work: surfaced so you can decide whether you have time.':decision==='AUTO_PRIORITY'?'Strong fit for permitted automation and low user labour.':decision==='REJECT'?'Fails a hard safety/compliance rule.':(o.verification&&o.verification.status==='SOURCE_INSPECTED'?'Source inspected, but key eligibility/payout facts still require confirmation.':'Potentially useful, but needs more verification before priority.');
   return {score,decision,reason,rate,effort,level};
 }
 
@@ -364,7 +364,7 @@ function renderManagerOpportunityReport(){
     .sort((a,b)=>b.decision.score-a.decision.score);
   if(!ranked.length){ box.innerHTML=''; return; }
   box.innerHTML='<div class="queue-item"><b>📊 Manager opportunity decisions</b><span class="note">Ranked by automation fit, expected value, user effort, verification and compliance. This is a decision aid, not an automatic commitment.</span></div>'+
-    ranked.slice(0,5).map(x=>'<div class="queue-item '+(x.decision.decision==='HUMAN_REVIEW'?'human':'')+'"><b>'+x.name+' — '+x.decision.decision.replace('_',' ')+'</b><div class="score">Decision score: '+x.decision.score+' • Automation: '+x.decision.level+' • Est. rate: '+(x.decision.rate?money(x.decision.rate)+'/hr':'needs research')+'</div><span class="note">User effort: '+x.decision.effort+' min/task. '+x.decision.reason+'</span></div>').join('');
+    ranked.slice(0,5).map(x=>'<div class="queue-item '+(x.decision.decision==='HUMAN_REVIEW'?'human':'')+'"><b>'+x.name+' — '+x.decision.decision.replace('_',' ')+'</b><div class="score">Decision score: '+x.decision.score+' • Automation: '+x.decision.level+' • Est. rate: '+(x.decision.rate?money(x.decision.rate)+'/hr':'needs research')+'</div><span class="note">User effort: '+x.decision.effort+' min/task. '+x.decision.reason+' Verification: '+(x.verification?x.verification.status:'NOT INSPECTED')+'.</span></div>').join('');
 }
 
 function render(){
