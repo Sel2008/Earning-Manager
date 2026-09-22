@@ -2,7 +2,8 @@ import fs from 'node:fs/promises';
 
 const FEED_PATH='data/opportunities.json';
 const MAX_VERIFY=40;
-const USER_AGENT='Earning-Manager-Research/1.1';
+const USER_AGENT='Earning-Manager-Research/1.2';
+const EMPTY_VERIFICATION={eligibility_status:'UNKNOWN',compensation_status:'UNKNOWN',automation_permission_status:'UNKNOWN',payout_status:'UNKNOWN',minimum_withdrawal:null,payment_methods:[],country_eligibility:'UNKNOWN',evidence_urls:[],evidence_notes:[],verified_at:null,confidence:'LOW'};
 const SOURCES=[
   {name:'Remote OK',url:'https://remoteok.com/remote-jobs.rss'},
   {name:'Remotive',url:'https://remotive.com/remote-jobs/feed'},
@@ -29,7 +30,21 @@ async function verifyOpportunity(o){
     if(evidence.prohibited_automation) automation='PROHIBITED';
     else if(evidence.automation_signal) automation='POSSIBLE_BUT_REQUIRES_REVIEW';
     const payout=evidence.payout_language;
-    const confidence=evidence.prohibited_automation||payout?'MEDIUM':'LOW';
+    const verification={
+      ...(o.verification||EMPTY_VERIFICATION),
+      eligibility_status:'UNKNOWN',
+      compensation_status:payout?'PARTIAL':'UNKNOWN',
+      automation_permission_status:evidence.prohibited_automation?'PROHIBITED':'UNKNOWN',
+      payout_status:payout?'EVIDENCE_FOUND':'UNKNOWN',
+      minimum_withdrawal:null,
+      payment_methods:[],
+      country_eligibility:'UNKNOWN',
+      evidence_urls:[o.source_url],
+      evidence_notes:[evidence.prohibited_automation?'Explicit automation prohibition signal found on source page.':'Source text was inspected; automation permission was not proven.',payout?'Compensation/payout language was found; amount and payout mechanism were not proven.':'No compensation/payout evidence was found in the inspected text.'],
+      verified_at:new Date().toISOString(),
+      confidence:evidence.prohibited_automation||payout?'MEDIUM':'LOW'
+    };
+    const confidence=verification.confidence;
     return {
       ...o,
       source_checked:true,
@@ -38,6 +53,7 @@ async function verifyOpportunity(o){
       automation_permitted:automation==='PROHIBITED'?false:null,
       payout_language_found:payout,
       verification:{
+        ...verification,
         status:'SOURCE_INSPECTED',
         http_status:res.status,
         automation_signal:automation,
@@ -47,7 +63,7 @@ async function verifyOpportunity(o){
       reason:o.reason+' Source page was inspected by the research worker; this is evidence collection, not proof of eligibility or payout.'
     };
   }catch(e){
-    return {...o,last_verified_at:new Date().toISOString(),verification:{status:'FETCH_FAILED',error:String(e).slice(0,160)}};
+    return {...o,last_verified_at:new Date().toISOString(),verification:{...(o.verification||EMPTY_VERIFICATION),status:'FETCH_FAILED',error:String(e).slice(0,160),verified_at:new Date().toISOString(),confidence:'LOW'}};
   }
 }
 
@@ -90,6 +106,7 @@ for(const source of SOURCES){
         expected_hourly_rate:null,
         machine_verifiable_completion:false,
         payout_confirmed:false,
+        verification:{...EMPTY_VERIFICATION,evidence_urls:[item.link],evidence_notes:['Discovered from a public feed; authoritative eligibility, compensation, automation permission and payout evidence is still required.']},
         upfront_cost:0,
         research_confidence:'LOW',
         priority_class:'HUMAN_REVIEW',
