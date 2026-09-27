@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-26T03:03:21+00:00 UTC",
+  "generated_at": "2026-09-27T03:03:41+00:00 UTC",
   "opportunities": [
     {
       "name": "Cointiply",
@@ -52,7 +52,7 @@
       "type": "user",
       "withdraw": "Platform rules apply",
       "reason": "Platform identified for integration research. Current account-level earning and withdrawal mechanisms must be confirmed before automation.",
-      "source_checked": false,
+      "source_checked": true,
       "source_url": "https://www.publish0x.com/page/how-it-works",
       "integration_status": "RESEARCH_REQUIRED",
       "automation_level": "HUMAN",
